@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('image');
             $table->string('address');
-            $table->float('latitude');
-            $table->float('longitude');
+            $table->float('latitude', 18, 15);
+            $table->float('longitude', 18, 15);
             $table->float('rate');
             $table->timestamps();
         });
