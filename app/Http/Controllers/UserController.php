@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Helpers\ResponseGenerator;
+use App\Mail\RecoverPassword;
 use App\Models\Restaurant;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -90,7 +93,7 @@ class UserController extends Controller
         }else{
             return ResponseGenerator::generateResponse(400, '', 'User not found');
         }
-    }   
+    }
     public function deleteRestaurantInFavourite(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -124,7 +127,7 @@ class UserController extends Controller
         $json = $request->getContent();
         $datos = json_decode($json);
 
-        
+
         $user = User::find($id);
         if($user){
             $validator = Validator::make($request->all(), [
@@ -132,7 +135,7 @@ class UserController extends Controller
                 'email' => 'email',
                 'password' => 'min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/',
             ]);
-    
+
             if($validator->fails()){
                 return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Something was wrong');
             }else{
@@ -151,11 +154,11 @@ class UserController extends Controller
                 }catch(\Exception $e){
                     return ResponseGenerator::generateResponse(400, '', 'Failed to save');
                 }
-            }            
+            }
         }else{
             return ResponseGenerator::generateResponse(400, '', 'User not found');
         }
-        
+
     }
     public function login(Request $request){
         $json = $request->getContent();
@@ -173,7 +176,7 @@ class UserController extends Controller
         }else{
             return ResponseGenerator::generateResponse(400, '', 'La contraseña es incorrecta.');
         }
-        
+
     }
     public function signOut($id){
         $user = User::find($id);
@@ -183,6 +186,26 @@ class UserController extends Controller
             return ResponseGenerator::generateResponse(200, '', 'Sign Out succesfuly');
         }else{
             return ResponseGenerator::generateResponse(200, '', 'User not found');
+        }
+    }
+    public function sendEmail(Request $request){
+        $json = $request->getContent();
+        $datos = json_decode($json);
+
+         $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+        ]);
+
+        if($validator->fails()){
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'EL formato del email es inválido');
+        }else{
+            $code = mt_rand();
+            try{
+                Mail::to($datos->email)->send(new RecoverPassword($datos->email, $code));
+                return ResponseGenerator::generateResponse(200, $code, 'El email se envió correctamente');
+            }catch(\Exception $e){
+                return ResponseGenerator::generateResponse(400, '', 'Algo fue mal');
+            }
         }
     }
 }
