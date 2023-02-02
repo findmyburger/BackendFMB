@@ -29,7 +29,7 @@ Route::prefix('users')->group(function(){
     Route::post('/deleteRestaurantInFavourite',[UserController::class,'deleteRestaurantInFavourite'])->middleware(['auth:sanctum']);
     Route::get('favouriteList',[UserController::class,'favouriteList'])->middleware(['auth:sanctum']);
     Route::post('/login',[UserController::class,'login']);
-    Route::post('/recoverPass',[UserController::class,'recoverPass']);
+    Route::post('/sendEmail',[UserController::class,'sendEmail']);
     Route::delete('/signOut/{id}',[UserController::class,'signOut'])->middleware(['auth:sanctum']);
 });
 Route::prefix('restaurants')->group(function(){
