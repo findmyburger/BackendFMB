@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Helpers\ResponseGenerator;
 use App\Models\Restaurant;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
 
 class RestaurantController extends Controller
 {
@@ -21,34 +24,69 @@ class RestaurantController extends Controller
         }
     }
     public function list(Request $request){
-        
+
         $json = $request->getContent();
         $datos = json_decode($json);
-        $restaurants = Restaurant::with('dishes')->orderBy('rate','desc')->get();
+
+        $validator = Validator::make($request->all(), [
+            'name' => ['max:255'],
+            'price' => ['decimal,2'],
+            'burgerType' => [Rule::in(['pescado','cerdo','pollo','ternera','vegana','vegetal'])],
+            'latitude' => ['between:-90,90', 'numeric'],
+            'longitude' => ['between:-180,180', 'numeric'],
+        ],
+        [
+            'name' => [
+                'required' => 'El nombre es obligatorio.',
+                'max' => 'El nombre es muy largo.',
+            ],
+            'price' => [
+                'decimal' => 'Formato de precio inválido.',
+            ],
+            'burgerType' => 'Tipo de carne inválido',
+            'latitude' => [
+                'numeric' => 'Debe ser numérica',
+                'between' => 'Formato inválido de la latitud',
+            ],
+            'longitude' => [
+                'numeric' => 'Debe ser numérica',
+                'between' => 'Formato inválido de la longitud',
+            ],
+        ]);
+
+        $recomendRestaurants = Restaurant::with('dishes')->limit(15)->orderBy('rate','desc')->get();
 
         if($datos){
+            $restaurants = Restaurant::with('dishes')->orderBy('rate','desc')->get();
+
             if(isset($datos->name)){
                 $restaurantName = $restaurants->where('name', 'like', $datos->name );
                 $restaurants = $restaurantName;
             }else{
                 if(isset($datos->price)){
-                    $dishPrice = Restaurant::join('dishes', 'restaurant_id', '=', 'restaurants.id')
-                                            ->where('price', '<=', $datos->price)
+                    $dishPrice = Restaurant::join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id')
+                                            ->where('dishes.price', '<=', $datos->price)
+                                            ->select('restaurants.*')
                                             ->get();
                     $restaurants = $dishPrice;
                 }
                 if(isset($datos->burgerType)){
-                    $burgerType = Restaurant::join('dishes', 'restaurant_id', '=', 'restaurants.id')
-                                            ->join('dish_ingredient', 'dishes.id', '=', 'dish_ingredient.dish_id')
-                                            ->join('ingredients', 'dish_ingredient.ingredient_id', '=', 'ingredients.id')
-                                            ->where('name', 'like', $datos->burgerType)
+                    $burgerType = Restaurant::join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id')
+                                            ->where('burgerType', 'like', $datos->burgerType)
+                                            ->select('restaurants.*')
                                             ->get();
                     $restaurants = $burgerType;
                 }
+
+            }
+            try{
+                return ResponseGenerator::generateResponse(200, $restaurants, 'Estos son los restaurantes filtrados.');
+            }catch(\Exception $e){
+                return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal.');
             }
         }
         try{
-            return ResponseGenerator::generateResponse(200, $restaurants, 'ok');
+            return ResponseGenerator::generateResponse(200, $recomendRestaurants, 'Estos son los recomendados.');
         }catch(\Exception $e){
             return ResponseGenerator::generateResponse(400, '', 'Something was wrong');
         }
@@ -68,13 +106,13 @@ class RestaurantController extends Controller
             $restaurant->latitude = $item->latitude;
             $restaurant->longitude = $item->longitude;
             $restaurant->rate = $item->rate;
-            
+
             $restaurant->save();
-            
+
         }
         return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
 
-        
-        
+
+
     }
 }
