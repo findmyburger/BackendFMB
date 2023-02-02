@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('image');
             $table->float('price');
+            $table->string('ingredients');
             $table->foreignId('restaurant_id')->constrained();
             $table->timestamps();
         });

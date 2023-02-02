@@ -53,4 +53,28 @@ class RestaurantController extends Controller
             return ResponseGenerator::generateResponse(400, '', 'Something was wrong');
         }
     }
+    public function register(Request $request){
+        $json = $request->getContent();
+        $datos = json_decode($json);
+
+
+        foreach($datos as $item){
+
+            $restaurant = new Restaurant();
+
+            $restaurant->name = $item->name;
+            $restaurant->image = $item->image;
+            $restaurant->address = $item->address;
+            $restaurant->latitude = $item->latitude;
+            $restaurant->longitude = $item->longitude;
+            $restaurant->rate = $item->rate;
+            
+            $restaurant->save();
+            
+        }
+        return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
+
+        
+        
+    }
 }

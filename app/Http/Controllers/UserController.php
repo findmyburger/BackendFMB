@@ -24,6 +24,7 @@ class UserController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/',
             'password_confirm' => 'required|same:password',
+            'image' => 'required',
         ]);
 
         if($validator->fails()){
@@ -32,6 +33,7 @@ class UserController extends Controller
             $user->name = $datos->name;
             $user->email = $datos->email;
             $user->password = $datos->password;
+            $user->image = $datos->image;
 
             try{
                 $user->save();
