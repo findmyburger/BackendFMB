@@ -60,25 +60,24 @@ class RestaurantController extends Controller
             $restaurants = Restaurant::with('dishes')->orderBy('rate','desc')->get();
 
             if(isset($datos->name)){
-                $restaurantName = $restaurants->where('name', 'like', $datos->name );
+                $restaurantName = $restaurants->where('name', 'like', '%'.$datos->name.'%' );
                 $restaurants = $restaurantName;
-            }else{
-                if(isset($datos->price)){
-                    $dishPrice = Restaurant::join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id')
-                                            ->where('dishes.price', '<=', $datos->price)
-                                            ->select('restaurants.*')
-                                            ->get();
-                    $restaurants = $dishPrice;
-                }
-                if(isset($datos->burgerType)){
-                    $burgerType = Restaurant::join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id')
-                                            ->where('burgerType', 'like', $datos->burgerType)
-                                            ->select('restaurants.*')
-                                            ->get();
-                    $restaurants = $burgerType;
-                }
-
             }
+            if(isset($datos->price)){
+                $dishPrice = Restaurant::join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id')
+                                        ->where('dishes.price', '<=', $datos->price)
+                                        ->select('restaurants.*')
+                                        ->get();
+                $restaurants = $dishPrice;
+            }
+            if(isset($datos->burgerType)){
+                $burgerType = Restaurant::join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id')
+                                        ->where('dishes.burgerType', 'like', $datos->burgerType)
+                                        ->select('restaurants.*')
+                                        ->get();
+                $restaurants = $burgerType;
+            }
+
             try{
                 return ResponseGenerator::generateResponse(200, $restaurants, 'Estos son los restaurantes filtrados.');
             }catch(\Exception $e){
@@ -88,7 +87,7 @@ class RestaurantController extends Controller
         try{
             return ResponseGenerator::generateResponse(200, $recomendRestaurants, 'Estos son los recomendados.');
         }catch(\Exception $e){
-            return ResponseGenerator::generateResponse(400, '', 'Something was wrong');
+            return ResponseGenerator::generateResponse(400, $e, 'Something was wrong');
         }
     }
     public function register(Request $request){
