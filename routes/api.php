@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('users')->group(function(){
 
-    Route::post('/updateData/{id}',[UserController::class,'updateData'])->middleware(['auth:sanctum']);
+    Route::post('/updateData',[UserController::class,'updateData'])->middleware(['auth:sanctum']);
     Route::put('/register',[UserController::class,'register']);
     Route::post('/addRestaurantToFavourite',[UserController::class,'addRestaurantToFavourite'])->middleware(['auth:sanctum']);
     Route::post('/deleteRestaurantInFavourite',[UserController::class,'deleteRestaurantInFavourite'])->middleware(['auth:sanctum']);
