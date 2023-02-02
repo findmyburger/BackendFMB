@@ -190,13 +190,13 @@ class UserController extends Controller
 
     }
     public function signOut($id){
-        $user = User::find($id);
+        $user = User::find(Auth::user()->id);
 
-        if($user){
+        try{
             $user->tokens()->delete();
-            return ResponseGenerator::generateResponse(200, '', 'Sign Out succesfuly');
-        }else{
-            return ResponseGenerator::generateResponse(200, '', 'User not found');
+            return ResponseGenerator::generateResponse(200, '', 'Se cerró sesión correctamente');
+        }catch(\Exception $e){
+            return ResponseGenerator::generateResponse(200, $e, 'Algo salió mal');
         }
     }
     public function sendEmail(Request $request){
