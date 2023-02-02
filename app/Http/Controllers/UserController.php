@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Helpers\ResponseGenerator;
 use App\Mail\RecoverPassword;
 use App\Models\Restaurant;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
@@ -123,41 +124,51 @@ class UserController extends Controller
             return ResponseGenerator::generateResponse(200, '', 'Ninja not found');
         }
     }
-    public function updateData(Request $request, $id){
+    public function updateData(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
 
 
-        $user = User::find($id);
-        if($user){
-            $validator = Validator::make($request->all(), [
-                'name' => 'max:20',
-                'email' => 'email',
-                'password' => 'min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/',
-            ]);
+        $validator = Validator::make($request->all(), [
+            'name' => 'max:20',
+            'email' => 'email',
+            'password' => ['min:8', Password::min(8)->mixedCase()->numbers()],
+        ],
+        [
+            'name' => [
+                'max' => 'El nombre es muy largo.',
+            ],
+            'email' => [
+                'email' => 'Formato de email inválido.',
+            ],
+            'password' => [
+                'min' => 'La contraseña debe ser mínimo de 8 cifras',
+                'mixedCase' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
+                'numbers' => 'La contraseña debe tener mínimo un número',
+            ],
+        ]);
 
-            if($validator->fails()){
-                return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Something was wrong');
-            }else{
-                if(isset($datos->name)){
-                    $user->name = $datos->name;
-                }
-                if(isset($datos->email)){
-                    $user->email = $datos->email;
-                }
-                if(isset($datos->password)){
-                    $user->password = $datos->password;
-                }
-                try{
-                    $user->save();
-                    return ResponseGenerator::generateResponse(200, $user, 'ok');
-                }catch(\Exception $e){
-                    return ResponseGenerator::generateResponse(400, '', 'Failed to save');
-                }
-            }
+        if($validator->fails()){
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Something was wrong');
         }else{
-            return ResponseGenerator::generateResponse(400, '', 'User not found');
+            $user = User::find(Auth::user()->id);
+            if(isset($datos->name)){
+                $user->name = $datos->name;
+            }
+            if(isset($datos->email)){
+                $user->email = $datos->email;
+            }
+            if(isset($datos->password)){
+                $user->password = Hash::make($datos->password);
+            }
+            try{
+                $user->save();
+                return ResponseGenerator::generateResponse(200, $user, 'Datos modificados correctamente.');
+            }catch(\Exception $e){
+                return ResponseGenerator::generateResponse(400, '', 'Algo salió mal.');
+            }
         }
+
 
     }
     public function login(Request $request){
