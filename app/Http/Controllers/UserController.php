@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use App\Http\Helpers\ResponseGenerator;
 use App\Models\Restaurant;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -20,26 +22,51 @@ class UserController extends Controller
         $user = new User();
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:20',
-            'email' => 'required|email',
-            'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/',
-            'password_confirm' => 'required|same:password',
+            'name' => ['required', 'max:20'],
+            'email' => ['required','email'],
+            'password' => ['required', Password::min(8)->mixedCase()->numbers()],
+            'password_confirm' => ['required','same:password'],
             'image' => 'required',
+        ],
+        [
+            'name' => [
+                'required' => 'El nombre es obligatorio.',
+                'max' => 'El nombre es muy largo.',
+            ],
+            'email' => [
+                'required' => 'El email es obligatorio.',
+                'email' => 'Formato de email inválido.',
+            ],
+            'password' => [
+                'required' => 'La contraseña es obligatoria.',
+                'min' => 'La contraseña debe ser mínimo de 8 cifras',
+                'mixedCase' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
+                'numbers' => 'La contraseña debe tener mínimo un número',
+            ],
+            'password_confirm' => [
+                'required' => 'La confirmación de contraseña es obligatoria',
+                'same:password' => 'Las contraseñas no coinciden',
+            ],
+            'image' => [
+                'required' => 'La imagen es obligatoria',
+            ],
         ]);
 
         if($validator->fails()){
-            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Something was wrong');
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
         }else{
             $user->name = $datos->name;
             $user->email = $datos->email;
-            $user->password = $datos->password;
+            $user->password = Hash::make($datos->password);
             $user->image = $datos->image;
+
+            $userResponse = [$user->id, $user->name];
 
             try{
                 $user->save();
-                return ResponseGenerator::generateResponse(200, $user, 'ok');
+                return ResponseGenerator::generateResponse(200, $userResponse, 'Usuario gurdado correctamente');
             }catch(\Exception $e){
-                return ResponseGenerator::generateResponse(400, '', 'Failed to save');
+                return ResponseGenerator::generateResponse(400, '', 'Fallo al guardar');
             }
         }
     }
