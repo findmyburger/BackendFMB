@@ -12,16 +12,16 @@ class RestaurantController extends Controller
         if($id){
             $restaurant = Restaurant::with('dishes')->find($id);
             if($restaurant){
-                return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
+                return ResponseGenerator::generateResponse(200, $restaurant, 'Este es el restaurante encontrado');
             }else{
-                return ResponseGenerator::generateResponse(200, '', 'Restaurant not found');
+                return ResponseGenerator::generateResponse(200, '', 'El restaurante no se ha encontrado.');
             }
         }else{
             return ResponseGenerator::generateResponse(400, '', 'No id');
         }
     }
     public function list(Request $request){
-        
+
         $json = $request->getContent();
         $datos = json_decode($json);
         $restaurants = Restaurant::with('dishes')->orderBy('rate','desc')->get();
@@ -68,13 +68,13 @@ class RestaurantController extends Controller
             $restaurant->latitude = $item->latitude;
             $restaurant->longitude = $item->longitude;
             $restaurant->rate = $item->rate;
-            
+
             $restaurant->save();
-            
+
         }
         return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
 
-        
-        
+
+
     }
 }
