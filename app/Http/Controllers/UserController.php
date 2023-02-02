@@ -164,14 +164,14 @@ class UserController extends Controller
         try{
             $user = User::where('email', 'like', $datos->email)->firstOrFail();
         }catch(\Exception $e){
-            return ResponseGenerator::generateResponse(400, '', 'Invalid email');
+            return ResponseGenerator::generateResponse(400, '', 'No se ha encontrado ningún usuario con ese email.');
         }
-        if($datos->password == $user->password){
+        if(Hash::check($datos->password, $user->password)){
             $token = $user->createToken('user');
             $fullUser = [$user, $token->plainTextToken];
-            return ResponseGenerator::generateResponse(200, $fullUser, 'Login succesfully');
+            return ResponseGenerator::generateResponse(200, $fullUser, 'Usuario válido');
         }else{
-            return ResponseGenerator::generateResponse(400, '', 'Invalid password');
+            return ResponseGenerator::generateResponse(400, '', 'La contraseña es incorrecta.');
         }
         
     }
