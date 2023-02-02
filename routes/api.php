@@ -23,22 +23,22 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('users')->group(function(){
 
-    Route::post('/updateData/{id}',[UserController::class,'updateData']);
+    Route::post('/updateData/{id}',[UserController::class,'updateData'])->middleware(['auth:sanctum']);
     Route::put('/register',[UserController::class,'register']);
-    Route::post('/addRestaurantToFavourite',[UserController::class,'addRestaurantToFavourite']);
-    Route::post('/deleteRestaurantInFavourite',[UserController::class,'deleteRestaurantInFavourite']);
-    Route::get('favouriteList',[UserController::class,'favouriteList']);
+    Route::post('/addRestaurantToFavourite',[UserController::class,'addRestaurantToFavourite'])->middleware(['auth:sanctum']);
+    Route::post('/deleteRestaurantInFavourite',[UserController::class,'deleteRestaurantInFavourite'])->middleware(['auth:sanctum']);
+    Route::get('favouriteList',[UserController::class,'favouriteList'])->middleware(['auth:sanctum']);
     Route::post('/login',[UserController::class,'login']);
     Route::post('/recoverPass',[UserController::class,'recoverPass']);
-    Route::delete('/signOut/{id}',[UserController::class,'signOut']);
+    Route::delete('/signOut/{id}',[UserController::class,'signOut'])->middleware(['auth:sanctum']);
 });
 Route::prefix('restaurants')->group(function(){
 
-    Route::get('/list',[RestaurantController::class,'list']);
-    Route::get('/show/{id}',[RestaurantController::class,'show']);
+    Route::get('/list',[RestaurantController::class,'list'])->middleware(['auth:sanctum']);
+    Route::get('/show/{id}',[RestaurantController::class,'show'])->middleware(['auth:sanctum']);
     Route::put('/register',[RestaurantController::class,'register']);
 });
 Route::prefix('dishes')->group(function(){
 
-    Route::get('/show/{id}',[DishController::class,'show']);
+    Route::get('/show/{id}',[DishController::class,'show'])->middleware(['auth:sanctum']);
 });
