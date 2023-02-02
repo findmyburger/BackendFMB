@@ -48,9 +48,9 @@ class RestaurantController extends Controller
             }
         }
         try{
-            return ResponseGenerator::generateResponse(200, $restaurants, 'ok');
+            return ResponseGenerator::generateResponse(200, $restaurants, 'Estos son todos restaurantes recomendados');
         }catch(\Exception $e){
-            return ResponseGenerator::generateResponse(400, '', 'Something was wrong');
+            return ResponseGenerator::generateResponse(400, '', 'Algo fue mal.');
         }
     }
     public function register(Request $request){
