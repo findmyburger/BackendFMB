@@ -82,6 +82,41 @@ class UserController extends Controller
             'restaurant_id' => ['required', 'max_digits:11', 'exists:restaurants,id', 'numeric'],
         ],
         [
+            'restaurant_id' => [
+                'required' => 'La id es obligatoria.',
+                'max_digits' => 'La id es muy largas.',
+                'exists' => 'Restaurante no válido',
+                'numeric' => 'La id tiene que ser un número',
+            ],
+        ]);
+        if($validator->fails()){
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
+        }else{
+            $user = User::find(Auth::user()->id);
+            $restaurantAlreadyFav = Validator::make($request->all(),[
+                'restaurant_id' => ['exists:restaurant_user,restaurant_id'],
+            ]);
+            if($restaurantAlreadyFav->fails()){
+                try{
+                    $user->restaurants()->attach($datos->restaurant_id);
+                    return ResponseGenerator::generateResponse(200, '', 'El restaurante se añadió correctamente.');
+                }catch(\Exception $e){
+                    return ResponseGenerator::generateResponse(400, '', 'Algo ha salido mal.');
+                }
+            }else{
+                return ResponseGenerator::generateResponse(400, '', 'El restaurante ya está añadido');
+            }
+
+        }
+    }
+    public function deleteRestaurantInFavourite(Request $request){
+        $json = $request->getContent();
+        $datos = json_decode($json);
+
+        $validator = Validator::make($request->all(), [
+            'restaurant_id' => ['required', 'max_digits:11', 'exists:restaurants,id', 'exists:restaurant_user,restaurant_id', 'numeric'],
+        ],
+        [
             'name' => [
                 'required' => 'La id es obligatoria.',
                 'max_digits' => 'La id es muy largas.',
@@ -94,32 +129,11 @@ class UserController extends Controller
         }else{
             $user = User::find(Auth::user()->id);
             try{
-                $user->restaurants()->attach($datos->restaurant_id);
-                return ResponseGenerator::generateResponse(200, '', 'El restaurante se añadió correctamente.');
+                $user->restaurants()->detach($datos->restaurant_id);
+                return ResponseGenerator::generateResponse(200, '', 'El restaurante se borró correctamente.');
             }catch(\Exception $e){
                 return ResponseGenerator::generateResponse(400, '', 'Algo ha salido mal.');
             }
-        }
-    }
-    public function deleteRestaurantInFavourite(Request $request){
-        $json = $request->getContent();
-        $datos = json_decode($json);
-
-        $user = User::find($datos->user_id);
-        if($user){
-            $restaurant = Restaurant::find($datos->restaurant_id);
-            if($restaurant){
-                try{
-                    $user->restaurants()->detach($datos->restaurant_id);
-                    return ResponseGenerator::generateResponse(200, $user, 'ok');
-                }catch(\Exception $e){
-                    return ResponseGenerator::generateResponse(400, '', 'Failed to save');
-                }
-            }else{
-                return ResponseGenerator::generateResponse(400, '', 'Restaurant not found');
-            }
-        }else{
-            return ResponseGenerator::generateResponse(400, '', 'User not found');
         }
     }
     public function favouriteList(){
