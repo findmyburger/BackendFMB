@@ -34,7 +34,7 @@ Route::prefix('users')->group(function(){
 });
 Route::prefix('restaurants')->group(function(){
 
-    Route::get('/list',[RestaurantController::class,'list'])->middleware(['auth:sanctum']);
+    Route::post('/list',[RestaurantController::class,'list'])->middleware(['auth:sanctum']);
     Route::get('/show/{id}',[RestaurantController::class,'show'])->middleware(['auth:sanctum']);
     Route::put('/register',[RestaurantController::class,'register']);
 });
