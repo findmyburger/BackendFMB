@@ -92,12 +92,14 @@ class UserController extends Controller
         if($validator->fails()){
             return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
         }else{
-
+            $user = User::find(Auth::user()->id);
+            try{
+                $user->restaurants()->attach($datos->restaurant_id);
+                return ResponseGenerator::generateResponse(200, '', 'El restaurante se añadió correctamente.');
+            }catch(\Exception $e){
+                return ResponseGenerator::generateResponse(400, '', 'Algo ha salido mal.');
+            }
         }
-
-
-
-
     }
     public function deleteRestaurantInFavourite(Request $request){
         $json = $request->getContent();
