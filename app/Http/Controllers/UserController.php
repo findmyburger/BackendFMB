@@ -116,13 +116,10 @@ class UserController extends Controller
             return ResponseGenerator::generateResponse(400, '', 'User not found');
         }
     }
-    public function favouriteList($id){
-        $user = User::with('restaurants')->find($id);
-        if($user){
-            return ResponseGenerator::generateResponse(200, $user->restaurants, 'ok');
-        }else{
-            return ResponseGenerator::generateResponse(200, '', 'Ninja not found');
-        }
+    public function favouriteList(){
+        $user = User::with('restaurants')->find(Auth::user()->id);
+
+        return ResponseGenerator::generateResponse(200, $user->restaurants, 'Estos son los restaurantes favoritos.');
     }
     public function updateData(Request $request){
         $json = $request->getContent();
