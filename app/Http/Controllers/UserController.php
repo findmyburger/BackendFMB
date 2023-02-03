@@ -78,22 +78,26 @@ class UserController extends Controller
         $json = $request->getContent();
         $datos = json_decode($json);
 
-        $user = User::find($datos->user_id);
-        if($user){
-            $restaurant = Restaurant::find($datos->restaurant_id);
-            if($restaurant){
-                try{
-                    $user->restaurants()->attach($datos->restaurant_id);
-                    return ResponseGenerator::generateResponse(200, $user, 'ok');
-                }catch(\Exception $e){
-                    return ResponseGenerator::generateResponse(400, '', 'Failed to save');
-                }
-            }else{
-                return ResponseGenerator::generateResponse(400, '', 'Restaurant not found');
-            }
+        $validator = Validator::make($request->all(), [
+            'restaurant_id' => ['required', 'max_digits:11', 'exists:restaurants,id', 'numeric'],
+        ],
+        [
+            'name' => [
+                'required' => 'La id es obligatoria.',
+                'max_digits' => 'La id es muy largas.',
+                'exists' => 'Restaurante no válido',
+                'numeric' => 'La id tiene que ser un número',
+            ],
+        ]);
+        if($validator->fails()){
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
         }else{
-            return ResponseGenerator::generateResponse(400, '', 'User not found');
+
         }
+
+
+
+
     }
     public function deleteRestaurantInFavourite(Request $request){
         $json = $request->getContent();
