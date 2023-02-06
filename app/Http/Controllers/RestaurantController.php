@@ -112,3 +112,4 @@ class RestaurantController extends Controller
         return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
     }
 }
+

@@ -27,7 +27,7 @@ Route::prefix('users')->group(function(){
     Route::put('/register',[UserController::class,'register']);
     Route::post('/addRestaurantToFavourite',[UserController::class,'addRestaurantToFavourite'])->middleware(['auth:sanctum']);
     Route::post('/deleteRestaurantInFavourite',[UserController::class,'deleteRestaurantInFavourite'])->middleware(['auth:sanctum']);
-    Route::get('favouriteList',[UserController::class,'favouriteList'])->middleware(['auth:sanctum']);
+    Route::get('/favouriteList',[UserController::class,'favouriteList'])->middleware(['auth:sanctum']);
     Route::post('/login',[UserController::class,'login']);
     Route::post('/sendEmail',[UserController::class,'sendEmail']);
     Route::delete('/signOut',[UserController::class,'signOut'])->middleware(['auth:sanctum']);
