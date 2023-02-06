@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Helpers\ResponseGenerator;
 use App\Models\Restaurant;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
 
 class RestaurantController extends Controller
 {
@@ -12,9 +15,9 @@ class RestaurantController extends Controller
         if($id){
             $restaurant = Restaurant::with('dishes')->find($id);
             if($restaurant){
-                return ResponseGenerator::generateResponse(200, $restaurant, 'Este es el restaurante encontrado');
+                return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
             }else{
-                return ResponseGenerator::generateResponse(200, '', 'El restaurante no se ha encontrado.');
+                return ResponseGenerator::generateResponse(200, '', 'Restaurant not found');
             }
         }else{
             return ResponseGenerator::generateResponse(400, '', 'No id');
@@ -24,33 +27,67 @@ class RestaurantController extends Controller
 
         $json = $request->getContent();
         $datos = json_decode($json);
-        $restaurants = Restaurant::with('dishes')->orderBy('rate','desc')->get();
 
-        if($datos){
-            if(isset($datos->name)){
-                $restaurantName = $restaurants->where('name', 'like', $datos->name );
-                $restaurants = $restaurantName;
-            }else{
+        $validator = Validator::make($request->all(), [
+            'name' => ['max:255'],
+            'price' => ['numeric'],
+            'burgerType' => [Rule::in(['pescado','cerdo','pollo','ternera','vegana','vegetal'])],
+            'latitude' => ['between:-90,90', 'numeric'],
+            'longitude' => ['between:-180,180', 'numeric'],
+        ],
+        [
+            'name' => [
+                'max' => 'El nombre es muy largo.',
+            ],
+            'price' => [
+                'numeric' => 'Formato de precio inválido.',
+            ],
+            'burgerType' => 'Tipo de carne inválido',
+            'latitude' => [
+                'numeric' => 'Debe ser numérica',
+                'between' => 'Formato inválido de la latitud',
+            ],
+            'longitude' => [
+                'numeric' => 'Debe ser numérica',
+                'between' => 'Formato inválido de la longitud',
+            ],
+        ]);
+
+        if($validator->fails()){
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
+        }else{
+            $recomendRestaurants = Restaurant::limit(15)->orderBy('rate','desc')->get();
+
+            $restaurants = Restaurant::where('restaurants.id','>',1);
+
+            if($datos){
+
+                if(isset($datos->price) || isset($datos->burgerType)){
+                    $restaurants->join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id');
+                }
+
+                if(isset($datos->name)){
+                    $restaurants->where('restaurants.name', 'like', "%$datos->name%");
+                }
                 if(isset($datos->price)){
-                    $dishPrice = Restaurant::join('dishes', 'restaurant_id', '=', 'restaurants.id')
-                                            ->where('price', '<=', $datos->price)
-                                            ->get();
-                    $restaurants = $dishPrice;
+                    $restaurants->where('dishes.price', '<=', $datos->price);
                 }
                 if(isset($datos->burgerType)){
-                    $burgerType = Restaurant::join('dishes', 'restaurant_id', '=', 'restaurants.id')
-                                            ->join('dish_ingredient', 'dishes.id', '=', 'dish_ingredient.dish_id')
-                                            ->join('ingredients', 'dish_ingredient.ingredient_id', '=', 'ingredients.id')
-                                            ->where('name', 'like', $datos->burgerType)
-                                            ->get();
-                    $restaurants = $burgerType;
+                    $restaurants->where('dishes.burgerType', 'like', "$datos->burgerType");
+                }
+
+                try{
+                    return ResponseGenerator::generateResponse(200, $restaurants->get(), 'Estos son los restaurantes filtrados.');
+                }catch(\Exception $e){
+                    return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal.');
+                }
+            }else{
+                try{
+                    return ResponseGenerator::generateResponse(200, $recomendRestaurants, 'Estos son los recomendados.');
+                }catch(\Exception $e){
+                    return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal');
                 }
             }
-        }
-        try{
-            return ResponseGenerator::generateResponse(200, $restaurants, 'Estos son todos restaurantes recomendados');
-        }catch(\Exception $e){
-            return ResponseGenerator::generateResponse(400, '', 'Algo fue mal.');
         }
     }
     public function register(Request $request){
@@ -73,8 +110,6 @@ class RestaurantController extends Controller
 
         }
         return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
-
-
-
     }
 }
+
