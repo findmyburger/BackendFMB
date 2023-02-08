@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('image');
             $table->float('price');
             $table->string('ingredients');
+            $table->enum('burgerType', ['pescado','pollo','cerdo','ternera','vegetal','vegana']);
             $table->foreignId('restaurant_id')->constrained();
             $table->timestamps();
         });
