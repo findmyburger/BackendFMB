@@ -199,7 +199,10 @@ class UserController extends Controller
         }
         if(Hash::check($datos->password, $user->password)){
             $token = $user->createToken('user');
-            $fullUser = [$user, $token->plainTextToken];
+            $fullUser = array (
+                'userName' => $user->name,
+                'token' => $token->plainTextToken
+            );
             return ResponseGenerator::generateResponse(200, $fullUser, 'Usuario válido');
         }else{
             return ResponseGenerator::generateResponse(400, '', 'La contraseña es incorrecta.');
