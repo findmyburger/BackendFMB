@@ -30,7 +30,6 @@ class UserController extends Controller
             'email' => ['required','email'],
             'password' => ['required', Password::min(8)->mixedCase()->numbers()],
             'password_confirm' => ['required','same:password'],
-            'image' => 'required',
         ],
         [
             'name' => [
@@ -49,28 +48,22 @@ class UserController extends Controller
             ],
             'password_confirm' => [
                 'required' => 'La confirmación de contraseña es obligatoria',
-                'same:password' => 'Las contraseñas no coinciden',
-            ],
-            'image' => [
-                'required' => 'La imagen es obligatoria',
+                'same' => 'Las contraseñas no coinciden',
             ],
         ]);
 
         if($validator->fails()){
-            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallos: ');
         }else{
             $user->name = $datos->name;
             $user->email = $datos->email;
             $user->password = Hash::make($datos->password);
-            $user->image = $datos->image;
-
-            $userResponse = [$user->id, $user->name];
 
             try{
                 $user->save();
-                return ResponseGenerator::generateResponse(200, $userResponse, 'Usuario gurdado correctamente');
+                return ResponseGenerator::generateResponse(200, '', 'Usuario gurdado correctamente');
             }catch(\Exception $e){
-                return ResponseGenerator::generateResponse(400, '', 'Fallo al guardar');
+                return ResponseGenerator::generateResponse(400, $e, 'Fallo al guardar');
             }
         }
     }
