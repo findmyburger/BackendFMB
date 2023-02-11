@@ -79,12 +79,11 @@ class UserController extends Controller
         $datos = json_decode($json);
 
         $validator = Validator::make($request->all(), [
-            'restaurant_id' => ['required', 'max_digits:11', 'exists:restaurants,id', 'numeric'],
+            'restaurant_id' => ['required', 'exists:restaurants,id', 'numeric'],
         ],
         [
             'restaurant_id' => [
                 'required' => 'La id es obligatoria.',
-                'max_digits' => 'La id es muy largas.',
                 'exists' => 'Restaurante no válido',
                 'numeric' => 'La id tiene que ser un número',
             ],
@@ -106,7 +105,6 @@ class UserController extends Controller
             }else{
                 return ResponseGenerator::generateResponse(400, '', 'El restaurante ya está añadido');
             }
-
         }
     }
     public function deleteRestaurantInFavourite(Request $request){
@@ -114,12 +112,11 @@ class UserController extends Controller
         $datos = json_decode($json);
 
         $validator = Validator::make($request->all(), [
-            'restaurant_id' => ['required', 'max_digits:11', 'exists:restaurants,id', 'exists:restaurant_user,restaurant_id', 'numeric'],
+            'restaurant_id' => ['required', 'exists:restaurants,id', 'exists:restaurant_user,restaurant_id', 'numeric'],
         ],
         [
             'name' => [
                 'required' => 'La id es obligatoria.',
-                'max_digits' => 'La id es muy largas.',
                 'exists' => 'Restaurante no válido',
                 'numeric' => 'La id tiene que ser un número',
             ],
