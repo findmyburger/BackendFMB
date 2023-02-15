@@ -285,7 +285,7 @@ class UserController extends Controller
                         ->select('users.*')
                         ->first();
 
-            $user->password = $datos->password;
+            $user->password = Hash::make($datos->password);
             try{
                 $user->save();
                 return ResponseGenerator::generateResponse(200, '', 'Contraseña cambiada.');
