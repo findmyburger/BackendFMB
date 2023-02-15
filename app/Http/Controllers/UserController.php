@@ -26,8 +26,8 @@ class UserController extends Controller
         $user = new User();
 
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:20'],
-            'email' => ['required','email'],
+            'name' => ['required', 'max:20', 'unique:users'],
+            'email' => ['required','email', 'unique:users'],
             'password' => ['required', Password::min(8)->mixedCase()->numbers()],
             'password_confirm' => ['required','same:password'],
         ],
@@ -35,30 +35,30 @@ class UserController extends Controller
             'name' => [
                 'required' => 'El nombre es obligatorio.',
                 'max' => 'El nombre es muy largo.',
+                'unique' => 'Ya existe un usuario con ese nombre.',
             ],
             'email' => [
                 'required' => 'El email es obligatorio.',
                 'email' => 'Formato de email inválido.',
+                'unique' => 'Ya existe un usuario con ese email.',
             ],
             'password' => [
                 'required' => 'La contraseña es obligatoria.',
                 'min' => 'La contraseña debe ser mínimo de 8 cifras',
-                'mixedCase' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
-                'numbers' => 'La contraseña debe tener mínimo un número',
+                'password.mixed' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
+                'password.numbers' => 'La contraseña debe tener mínimo un número',
             ],
             'password_confirm' => [
                 'required' => 'La confirmación de contraseña es obligatoria',
                 'same' => 'Las contraseñas no coinciden',
             ],
         ]);
-
         if($validator->fails()){
             return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallos: ');
         }else{
             $user->name = $datos->name;
             $user->email = $datos->email;
             $user->password = Hash::make($datos->password);
-
             try{
                 $user->save();
                 return ResponseGenerator::generateResponse(200, '', 'Usuario gurdado correctamente');
