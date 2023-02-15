@@ -242,7 +242,11 @@ class UserController extends Controller
             $code = mt_rand();
             try{
                 Mail::to($datos->email)->send(new RecoverPassword($datos->email, $code));
-                return ResponseGenerator::generateResponse(200, $code, 'El email se envió correctamente');
+                $data = array (
+                    'code' => $code,
+                    'email' => $datos->email
+                );
+                return ResponseGenerator::generateResponse(200, $data, 'El email se envió correctamente');
             }catch(\Exception $e){
                 return ResponseGenerator::generateResponse(400, '', 'Algo fue mal');
             }
@@ -281,14 +285,13 @@ class UserController extends Controller
                         ->select('users.*')
                         ->first();
 
-
             $user->password = $datos->password;
-
             try{
                 $user->save();
                 return ResponseGenerator::generateResponse(200, '', 'Contraseña cambiada.');
             }catch(\Exception $e){
-                return ResponseGenerator::generateResponse(400, '', 'Fallo al guardar.');
+                return ResponseGenerator::generateResponse(400, '
+                ', 'Fallo al guardar.');
             }
         }
 
