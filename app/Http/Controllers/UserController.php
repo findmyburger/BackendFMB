@@ -42,12 +42,6 @@ class UserController extends Controller
                 'email' => 'Formato de email inválido.',
                 'unique' => 'Ya existe un usuario con ese email.',
             ],
-            /*'password' => [
-                'required' => 'La contraseña es obligatoria.',
-                'min' => 'La contraseña debe ser mínimo de 8 cifras',
-                'mixedCase' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
-                'numbers' => 'La contraseña debe tener mínimo un número',
-            ],*/
             'password_confirm' => [
                 'required' => 'La confirmación de contraseña es obligatoria',
                 'same' => 'Las contraseñas no coinciden',
@@ -154,7 +148,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'max:20',
             'email' => 'email',
-            'password' => ['min:8', Password::min(8)->mixedCase()->numbers()],
+            'password' => ['required', Password::min(8)->letters()->numbers()->mixedCase()],
         ],
         [
             'name' => [
@@ -163,15 +157,25 @@ class UserController extends Controller
             'email' => [
                 'email' => 'Formato de email inválido.',
             ],
-            'password' => [
-                'min' => 'La contraseña debe ser mínimo de 8 cifras',
-                'mixedCase' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
-                'numbers' => 'La contraseña debe tener mínimo un número',
-            ],
         ]);
 
         if($validator->fails()){
-            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Something was wrong');
+            $errors = [];
+            foreach($validator->errors()->all() as $error){
+
+                if($error == "The password must be at least 8 characters."){
+                    array_push($errors, "La contraseña debe ser mínimo de 8 cifras." );
+                }else if($error == "The password must contain at least one uppercase and one lowercase letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra minúscula y una mayúscula.");
+                }else if($error == "The password must contain at least one letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra.");
+                }else if($error == "The password must contain at least one number."){
+                    array_push($errors, "La contraseña debe tener mínimo un número.");
+                }else{
+                    array_push($errors, $error);
+                }
+            }
+            return ResponseGenerator::generateResponse(400, $errors, 'Fallos: ');
         }else{
             $user = User::find(Auth::user()->id);
             if(isset($datos->name)){
@@ -243,5 +247,50 @@ class UserController extends Controller
                 return ResponseGenerator::generateResponse(400, '', 'Algo fue mal');
             }
         }
+    }
+    public function recoverPass(Request $request){
+        $json = $request->getContent();
+        $datos = json_decode($json);
+
+        $user = new User();
+
+        $validator = Validator::make($request->all(), [
+            'password' => ['required', Password::min(8)->letters()->numbers()->mixedCase()],
+            'password_confirm' => ['required','same:password'],
+            'email' => ['required'],
+        ]);
+        if($validator->fails()){
+            $errors = [];
+            foreach($validator->errors()->all() as $error){
+
+                if($error == "The password must be at least 8 characters."){
+                    array_push($errors, "La contraseña debe ser mínimo de 8 cifras." );
+                }else if($error == "The password must contain at least one uppercase and one lowercase letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra minúscula y una mayúscula.");
+                }else if($error == "The password must contain at least one letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra.");
+                }else if($error == "The password must contain at least one number."){
+                    array_push($errors, "La contraseña debe tener mínimo un número.");
+                }else{
+                    array_push($errors, $error);
+                }
+            }
+            return ResponseGenerator::generateResponse(400, $errors, 'Fallos: ');
+        }else{
+            $user = User::where('email', '=', $datos->email)
+                        ->select('users.*')
+                        ->first();
+
+
+            $user->password = $datos->password;
+
+            try{
+                $user->save();
+                return ResponseGenerator::generateResponse(200, '', 'Contraseña cambiada.');
+            }catch(\Exception $e){
+                return ResponseGenerator::generateResponse(400, '', 'Fallo al guardar.');
+            }
+        }
+
     }
 }
