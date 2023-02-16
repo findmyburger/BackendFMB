@@ -148,7 +148,8 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'max:20',
             'email' => 'email',
-            'password' => ['required', Password::min(8)->letters()->numbers()->mixedCase()],
+            'password' => Password::min(8)->letters()->numbers()->mixedCase(),
+            'image' => ['max:255', 'image'],
         ],
         [
             'name' => [
@@ -157,6 +158,10 @@ class UserController extends Controller
             'email' => [
                 'email' => 'Formato de email inválido.',
             ],
+            'image' => [
+                'max' => 'La referencia es muy larga.',
+                'image' => 'El formato de la imagen es inválido',
+            ]
         ]);
 
         if($validator->fails()){
@@ -178,6 +183,7 @@ class UserController extends Controller
             return ResponseGenerator::generateResponse(400, $errors, 'Fallos: ');
         }else{
             $user = User::find(Auth::user()->id);
+
             if(isset($datos->name)){
                 $user->name = $datos->name;
             }
@@ -187,9 +193,12 @@ class UserController extends Controller
             if(isset($datos->password)){
                 $user->password = Hash::make($datos->password);
             }
+            if(isset($datos->image)){
+                $user->image = $datos->image;
+            }
             try{
                 $user->save();
-                return ResponseGenerator::generateResponse(200, $user, 'Datos modificados correctamente.');
+                return ResponseGenerator::generateResponse(200, '', 'Datos modificados correctamente.');
             }catch(\Exception $e){
                 return ResponseGenerator::generateResponse(400, '', 'Algo salió mal.');
             }
