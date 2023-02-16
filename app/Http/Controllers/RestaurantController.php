@@ -68,15 +68,7 @@ class RestaurantController extends Controller
 
             if($datos){
                 if(isset($datos->latitude) && isset($datos->longitude) && isset($datos->radius)){
-                    $restaurants = Restaurant::select(DB::raw("restaurants.*,
-                                ( 3959 * acos( cos( radians({$datos->latitude}) ) *
-                                cos( radians( latitude ) )
-                                * cos( radians( longitude ) - radians({$datos->longitude})
-                                ) + sin( radians({$datos->latitude}) ) *
-                                sin( radians( latitude ) ) )
-                            ) AS distance"))
-                        ->having('distance', '<', $datos->radius)
-                        ->orderBy('distance');
+                    $restaurants = $this->filterByLocation($datos->latitude,$datos->longitude,$datos->radius);
                 }
                 if(isset($datos->price) || isset($datos->burgerType)){
                     $restaurants->join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id');
@@ -125,8 +117,7 @@ class RestaurantController extends Controller
         }
         return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
     }
-    public function filterByLocation($latitude, $longitude, $radius)
-    {
+    public function filterByLocation($latitude, $longitude, $radius){
         $restaurants = Restaurant::select(DB::raw("*,
                     ( 3959 * acos( cos( radians({$latitude}) ) *
                     cos( radians( latitude ) )
