@@ -32,6 +32,8 @@ Route::prefix('users')->group(function(){
     Route::post('/sendEmail',[UserController::class,'sendEmail']);
     Route::post('/recoverPass',[UserController::class,'recoverPass']);
     Route::delete('/signOut/{id}',[UserController::class,'signOut'])->middleware(['auth:sanctum']);
+    Route::get('/getData',[UserController::class,'getData'])->middleware(['auth:sanctum']);
+
 });
 Route::prefix('restaurants')->group(function(){
 

@@ -305,4 +305,13 @@ class UserController extends Controller
         }
 
     }
+    public function getData(){
+        $userData = [
+            "id" => Auth::user()->id,
+            "name" => Auth::user()->name,
+            "email" => Auth::user()->email,
+            "image" => Auth::user()->image
+        ];
+        return ResponseGenerator::generateResponse(200, $userData, 'Estos son los datos del usuario');
+    }
 }
