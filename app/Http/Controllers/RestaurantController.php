@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Helpers\ResponseGenerator;
+use App\Models\Dish;
 use App\Models\Restaurant;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
@@ -25,14 +26,13 @@ class RestaurantController extends Controller
         }
     }
     public function list(Request $request){
-
         $json = $request->getContent();
         $datos = json_decode($json);
 
         $validator = Validator::make($request->all(), [
             'name' => ['max:255'],
             'price' => ['numeric'],
-            'burgerType' => [Rule::in(['pescado','cerdo','pollo','ternera','vegana','vegetal'])],
+            'burgerType' => [Rule::in(['pescado','cerdo','pollo','ternera','vegana','vegetariana','buey'])],
             'latitude' => ['between:-90,90', 'numeric'],
             'longitude' => ['between:-180,180', 'numeric'],
             'radius' => ['numeric'],
