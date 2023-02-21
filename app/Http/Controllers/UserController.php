@@ -147,27 +147,30 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'max:20',
-            'email' => 'email',
-            'password' => Password::min(8)->letters()->numbers()->mixedCase(),
+            'password' => 'max:40',
+            'newPassword' => Password::min(8)->letters()->numbers()->mixedCase(),
+            'newPassword_confirmation' => 'same:newPassword',
             'image' => ['max:255', 'image'],
         ],
         [
             'name' => [
                 'max' => 'El nombre es muy largo.',
             ],
-            'email' => [
-                'email' => 'Formato de email inválido.',
+            'password' => [
+                'max' => 'La contraseña es muy larga',
+            ],
+            'newPassword_confirmation' => [
+                'same' => 'Las contraseñas no coinciden'
             ],
             'image' => [
                 'max' => 'La referencia es muy larga.',
                 'image' => 'El formato de la imagen es inválido',
-            ]
+            ],
         ]);
 
         if($validator->fails()){
             $errors = [];
             foreach($validator->errors()->all() as $error){
-
                 if($error == "The password must be at least 8 characters."){
                     array_push($errors, "La contraseña debe ser mínimo de 8 cifras." );
                 }else if($error == "The password must contain at least one uppercase and one lowercase letter."){
@@ -187,11 +190,12 @@ class UserController extends Controller
             if(isset($datos->name)){
                 $user->name = $datos->name;
             }
-            if(isset($datos->email)){
-                $user->email = $datos->email;
-            }
-            if(isset($datos->password)){
-                $user->password = Hash::make($datos->password);
+            if(isset($datos->password) && isset($datos->newPassword) && isset($datos->newPassword_confirmation)){
+                if (Hash::check($datos->password, Auth::user()->password)) {
+                    $user->password = Hash::make($datos->newPassword);
+                }else{
+                    return ResponseGenerator::generateResponse(400, '', 'La contraseña es incorrecta.');
+                }
             }
             if(isset($datos->image)){
                 $user->image = $datos->image;
@@ -227,7 +231,7 @@ class UserController extends Controller
         }
 
     }
-    public function signOut($id){
+    public function signOut(){
         $user = User::find(Auth::user()->id);
 
         try{
