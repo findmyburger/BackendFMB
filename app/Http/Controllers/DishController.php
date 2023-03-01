@@ -6,6 +6,7 @@ use App\Http\Helpers\ResponseGenerator;
 use App\Models\Dish;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class DishController extends Controller
 {
@@ -21,24 +22,32 @@ class DishController extends Controller
             return ResponseGenerator::generateResponse(400, '', 'No id');
         }
     }
-    /*public function show2(Request $request){
+    public function restaurantFilter(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
+
         $validator = Validator::make($request->all(), [
-            'id' => ['required', 'max_digists:11', 'exists:dishes,id'],
+            'restaurant_id' => ['integer','exists:restaurants,id'],
+            'burgerType' => [Rule::in(['pescado','cerdo','pollo','ternera','vegana','vegetariana','buey'])],
         ],
         [
-            'id' => [
-                'required' => 'La id es obligatoria.',
-                'max_digits' => 'La id es muy larga.',
-                'exits' => 'No se ha encontrado el plato'
-            ],
+            'burgerType' => 'Tipo de carne inválido',
+            'restaurant_id' => [
+                'integer' => 'La id debe ser un número',
+                'exists' => 'Restaurante inválido',
+            ]
         ]);
-        try{
-            $dish = Dish::with('ingredients')->find($datos->id);
-            return ResponseGenerator::generateResponse(200, $dish, 'Este es el plato encontrado');
-        }catch(\Exception $e){
-            return ResponseGenerator::generateResponse(400, '', 'Fallo al buscar el plato');
+        if($validator->fails()){
+            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
+        }else{
+
+            $dishes = Dish::where('dishes.burgerType', 'like', "$datos->burgerType")
+                            ->where('dishes.restaurant_id','=', $datos->restaurant_id);
+            try{
+                return ResponseGenerator::generateResponse(200, $dishes->get(), 'Estos son los platos filtrados.');
+            }catch(\Exception $e){
+                return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal.');
+            }
         }
-    }*/
+    }
 }

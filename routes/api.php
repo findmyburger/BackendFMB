@@ -24,13 +24,16 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('users')->group(function(){
 
     Route::post('/updateData',[UserController::class,'updateData'])->middleware(['auth:sanctum']);
-    Route::put('/register',[UserController::class,'register']);
+    Route::post('/register',[UserController::class,'register']);
     Route::post('/addRestaurantToFavourite',[UserController::class,'addRestaurantToFavourite'])->middleware(['auth:sanctum']);
     Route::post('/deleteRestaurantInFavourite',[UserController::class,'deleteRestaurantInFavourite'])->middleware(['auth:sanctum']);
     Route::get('/favouriteList',[UserController::class,'favouriteList'])->middleware(['auth:sanctum']);
     Route::post('/login',[UserController::class,'login']);
     Route::post('/sendEmail',[UserController::class,'sendEmail']);
+    Route::post('/recoverPass',[UserController::class,'recoverPass']);
     Route::delete('/signOut',[UserController::class,'signOut'])->middleware(['auth:sanctum']);
+    Route::get('/getData',[UserController::class,'getData'])->middleware(['auth:sanctum']);
+
 });
 Route::prefix('restaurants')->group(function(){
 
@@ -39,6 +42,6 @@ Route::prefix('restaurants')->group(function(){
     Route::put('/register',[RestaurantController::class,'register']);
 });
 Route::prefix('dishes')->group(function(){
-
+    Route::post('/restaurantFilter',[DishController::class,'restaurantFilter'])->middleware(['auth:sanctum']);
     Route::get('/show/{id}',[DishController::class,'show'])->middleware(['auth:sanctum']);
 });

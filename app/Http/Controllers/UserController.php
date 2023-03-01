@@ -26,51 +26,53 @@ class UserController extends Controller
         $user = new User();
 
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:20'],
-            'email' => ['required','email'],
-            'password' => ['required', Password::min(8)->mixedCase()->numbers()],
+            'name' => ['required', 'max:20', 'unique:users'],
+            'email' => ['required','email', 'unique:users'],
+            'password' => ['required', Password::min(8)->letters()->numbers()->mixedCase()],
             'password_confirm' => ['required','same:password'],
-            'image' => 'required',
         ],
         [
             'name' => [
                 'required' => 'El nombre es obligatorio.',
                 'max' => 'El nombre es muy largo.',
+                'unique' => 'Ya existe un usuario con ese nombre.',
             ],
             'email' => [
                 'required' => 'El email es obligatorio.',
                 'email' => 'Formato de email inválido.',
-            ],
-            'password' => [
-                'required' => 'La contraseña es obligatoria.',
-                'min' => 'La contraseña debe ser mínimo de 8 cifras',
-                'mixedCase' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
-                'numbers' => 'La contraseña debe tener mínimo un número',
+                'unique' => 'Ya existe un usuario con ese email.',
             ],
             'password_confirm' => [
                 'required' => 'La confirmación de contraseña es obligatoria',
-                'same:password' => 'Las contraseñas no coinciden',
-            ],
-            'image' => [
-                'required' => 'La imagen es obligatoria',
+                'same' => 'Las contraseñas no coinciden',
             ],
         ]);
-
         if($validator->fails()){
-            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
+            $errors = [];
+            foreach($validator->errors()->all() as $error){
+
+                if($error == "The password must be at least 8 characters."){
+                    array_push($errors, "La contraseña debe ser mínimo de 8 cifras." );
+                }else if($error == "The password must contain at least one uppercase and one lowercase letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra minúscula y una mayúscula.");
+                }else if($error == "The password must contain at least one letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra.");
+                }else if($error == "The password must contain at least one number."){
+                    array_push($errors, "La contraseña debe tener mínimo un número.");
+                }else{
+                    array_push($errors, $error);
+                }
+            }
+            return ResponseGenerator::generateResponse(400, $errors, 'Fallos: ');
         }else{
             $user->name = $datos->name;
             $user->email = $datos->email;
             $user->password = Hash::make($datos->password);
-            $user->image = $datos->image;
-
-            $userResponse = [$user->id, $user->name];
-
             try{
                 $user->save();
-                return ResponseGenerator::generateResponse(200, $userResponse, 'Usuario gurdado correctamente');
+                return ResponseGenerator::generateResponse(200, '', 'Usuario gurdado correctamente');
             }catch(\Exception $e){
-                return ResponseGenerator::generateResponse(400, '', 'Fallo al guardar');
+                return ResponseGenerator::generateResponse(400, $e, 'Fallo al guardar');
             }
         }
     }
@@ -79,12 +81,11 @@ class UserController extends Controller
         $datos = json_decode($json);
 
         $validator = Validator::make($request->all(), [
-            'restaurant_id' => ['required', 'max_digits:11', 'exists:restaurants,id', 'numeric'],
+            'restaurant_id' => ['required', 'exists:restaurants,id', 'numeric'],
         ],
         [
             'restaurant_id' => [
                 'required' => 'La id es obligatoria.',
-                'max_digits' => 'La id es muy largas.',
                 'exists' => 'Restaurante no válido',
                 'numeric' => 'La id tiene que ser un número',
             ],
@@ -106,7 +107,6 @@ class UserController extends Controller
             }else{
                 return ResponseGenerator::generateResponse(400, '', 'El restaurante ya está añadido');
             }
-
         }
     }
     public function deleteRestaurantInFavourite(Request $request){
@@ -114,12 +114,11 @@ class UserController extends Controller
         $datos = json_decode($json);
 
         $validator = Validator::make($request->all(), [
-            'restaurant_id' => ['required', 'max_digits:11', 'exists:restaurants,id', 'exists:restaurant_user,restaurant_id', 'numeric'],
+            'restaurant_id' => ['required', 'exists:restaurants,id', 'exists:restaurant_user,restaurant_id', 'numeric'],
         ],
         [
             'name' => [
                 'required' => 'La id es obligatoria.',
-                'max_digits' => 'La id es muy largas.',
                 'exists' => 'Restaurante no válido',
                 'numeric' => 'La id tiene que ser un número',
             ],
@@ -148,39 +147,62 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'max:20',
-            'email' => 'email',
-            'password' => ['min:8', Password::min(8)->mixedCase()->numbers()],
+            'password' => 'max:40',
+            'newPassword' => Password::min(8)->letters()->numbers()->mixedCase(),
+            'newPassword_confirmation' => 'same:newPassword',
+            'image' => ['max:255', 'image'],
         ],
         [
             'name' => [
                 'max' => 'El nombre es muy largo.',
             ],
-            'email' => [
-                'email' => 'Formato de email inválido.',
-            ],
             'password' => [
-                'min' => 'La contraseña debe ser mínimo de 8 cifras',
-                'mixedCase' => 'La contraseña debe tener mínimo una letra minúscula y una mayúscula',
-                'numbers' => 'La contraseña debe tener mínimo un número',
+                'max' => 'La contraseña es muy larga',
+            ],
+            'newPassword_confirmation' => [
+                'same' => 'Las contraseñas no coinciden'
+            ],
+            'image' => [
+                'max' => 'La referencia es muy larga.',
+                'image' => 'El formato de la imagen es inválido',
             ],
         ]);
 
         if($validator->fails()){
-            return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Something was wrong');
+            $errors = [];
+            foreach($validator->errors()->all() as $error){
+                if($error == "The password must be at least 8 characters."){
+                    array_push($errors, "La contraseña debe ser mínimo de 8 cifras." );
+                }else if($error == "The password must contain at least one uppercase and one lowercase letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra minúscula y una mayúscula.");
+                }else if($error == "The password must contain at least one letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra.");
+                }else if($error == "The password must contain at least one number."){
+                    array_push($errors, "La contraseña debe tener mínimo un número.");
+                }else{
+                    array_push($errors, $error);
+                }
+            }
+            return ResponseGenerator::generateResponse(400, $errors, 'Fallos: ');
         }else{
             $user = User::find(Auth::user()->id);
+
             if(isset($datos->name)){
                 $user->name = $datos->name;
             }
-            if(isset($datos->email)){
-                $user->email = $datos->email;
+            if(isset($datos->password) && isset($datos->newPassword) && isset($datos->newPassword_confirmation)){
+                if (Hash::check($datos->password, Auth::user()->password)) {
+                    $user->password = Hash::make($datos->newPassword);
+                }else{
+                    return ResponseGenerator::generateResponse(400, '', 'La contraseña es incorrecta.');
+                }
             }
-            if(isset($datos->password)){
-                $user->password = Hash::make($datos->password);
+            if(isset($datos->image)){
+                $user->image = $datos->image;
             }
             try{
                 $user->save();
-                return ResponseGenerator::generateResponse(200, $user, 'Datos modificados correctamente.');
+                return ResponseGenerator::generateResponse(200, '', 'Datos modificados correctamente.');
             }catch(\Exception $e){
                 return ResponseGenerator::generateResponse(400, '', 'Algo salió mal.');
             }
@@ -199,14 +221,17 @@ class UserController extends Controller
         }
         if(Hash::check($datos->password, $user->password)){
             $token = $user->createToken('user');
-            $fullUser = [$user, $token->plainTextToken];
+            $fullUser = array (
+                'userName' => $user->name,
+                'token' => $token->plainTextToken
+            );
             return ResponseGenerator::generateResponse(200, $fullUser, 'Usuario válido');
         }else{
             return ResponseGenerator::generateResponse(400, '', 'La contraseña es incorrecta.');
         }
 
     }
-    public function signOut($id){
+    public function signOut(){
         $user = User::find(Auth::user()->id);
 
         try{
@@ -230,10 +255,67 @@ class UserController extends Controller
             $code = mt_rand();
             try{
                 Mail::to($datos->email)->send(new RecoverPassword($datos->email, $code));
-                return ResponseGenerator::generateResponse(200, $code, 'El email se envió correctamente');
+                $data = array (
+                    'code' => $code,
+                    'email' => $datos->email
+                );
+                return ResponseGenerator::generateResponse(200, $data, 'El email se envió correctamente');
             }catch(\Exception $e){
                 return ResponseGenerator::generateResponse(400, '', 'Algo fue mal');
             }
         }
+    }
+    public function recoverPass(Request $request){
+        $json = $request->getContent();
+        $datos = json_decode($json);
+
+        $user = new User();
+
+        $validator = Validator::make($request->all(), [
+            'password' => ['required', Password::min(8)->letters()->numbers()->mixedCase()],
+            'password_confirm' => ['required','same:password'],
+            'email' => ['required'],
+        ]);
+        if($validator->fails()){
+            $errors = [];
+            foreach($validator->errors()->all() as $error){
+
+                if($error == "The password must be at least 8 characters."){
+                    array_push($errors, "La contraseña debe ser mínimo de 8 cifras." );
+                }else if($error == "The password must contain at least one uppercase and one lowercase letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra minúscula y una mayúscula.");
+                }else if($error == "The password must contain at least one letter."){
+                    array_push($errors, "La contraseña debe tener mínimo una letra.");
+                }else if($error == "The password must contain at least one number."){
+                    array_push($errors, "La contraseña debe tener mínimo un número.");
+                }else{
+                    array_push($errors, $error);
+                }
+            }
+            return ResponseGenerator::generateResponse(400, $errors, 'Fallos: ');
+        }else{
+            $user = User::where('email', '=', $datos->email)
+                        ->select('users.*')
+                        ->first();
+
+            $user->password = Hash::make($datos->password);
+            try{
+                $user->save();
+                return ResponseGenerator::generateResponse(200, '', 'Contraseña cambiada.');
+            }catch(\Exception $e){
+                return ResponseGenerator::generateResponse(400, '
+                ', 'Fallo al guardar.');
+            }
+        }
+
+    }
+    public function getData(){
+        $userData = [
+            "id" => Auth::user()->id,
+            "name" => Auth::user()->name,
+            "email" => Auth::user()->email,
+            "image" => Auth::user()->image
+        ];
+        return ResponseGenerator::generateResponse(200, $userData, 'Estos son los datos del usuario');
     }
 }

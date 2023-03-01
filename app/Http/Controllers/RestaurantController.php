@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Helpers\ResponseGenerator;
+use App\Models\Dish;
 use App\Models\Restaurant;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
@@ -24,16 +26,16 @@ class RestaurantController extends Controller
         }
     }
     public function list(Request $request){
-
         $json = $request->getContent();
         $datos = json_decode($json);
 
         $validator = Validator::make($request->all(), [
             'name' => ['max:255'],
             'price' => ['numeric'],
-            'burgerType' => [Rule::in(['pescado','cerdo','pollo','ternera','vegana','vegetal'])],
+            'burgerType' => [Rule::in(['pescado','cerdo','pollo','ternera','vegana','vegetariana','buey'])],
             'latitude' => ['between:-90,90', 'numeric'],
             'longitude' => ['between:-180,180', 'numeric'],
+            'radius' => ['numeric'],
         ],
         [
             'name' => [
@@ -43,6 +45,7 @@ class RestaurantController extends Controller
                 'numeric' => 'Formato de precio inválido.',
             ],
             'burgerType' => 'Tipo de carne inválido',
+
             'latitude' => [
                 'numeric' => 'Debe ser numérica',
                 'between' => 'Formato inválido de la latitud',
@@ -50,6 +53,9 @@ class RestaurantController extends Controller
             'longitude' => [
                 'numeric' => 'Debe ser numérica',
                 'between' => 'Formato inválido de la longitud',
+            ],
+            'radius' => [
+                'numeric' => 'El radio debe ser un número',
             ],
         ]);
 
@@ -61,11 +67,12 @@ class RestaurantController extends Controller
             $restaurants = Restaurant::where('restaurants.id','>',1);
 
             if($datos){
-
+                if(isset($datos->latitude) && isset($datos->longitude) && isset($datos->radius)){
+                    $restaurants = $this->filterByLocation($datos->latitude,$datos->longitude,$datos->radius);
+                }
                 if(isset($datos->price) || isset($datos->burgerType)){
                     $restaurants->join('dishes', 'dishes.restaurant_id', '=', 'restaurants.id');
                 }
-
                 if(isset($datos->name)){
                     $restaurants->where('restaurants.name', 'like', "%$datos->name%");
                 }
@@ -75,7 +82,6 @@ class RestaurantController extends Controller
                 if(isset($datos->burgerType)){
                     $restaurants->where('dishes.burgerType', 'like', "$datos->burgerType");
                 }
-
                 try{
                     return ResponseGenerator::generateResponse(200, $restaurants->get(), 'Estos son los restaurantes filtrados.');
                 }catch(\Exception $e){
@@ -111,5 +117,20 @@ class RestaurantController extends Controller
         }
         return ResponseGenerator::generateResponse(200, $restaurant, 'ok');
     }
+    public function filterByLocation($latitude, $longitude, $radius){
+        $restaurants = Restaurant::select(DB::raw("*,
+                    ( 3959 * acos( cos( radians({$latitude}) ) *
+                    cos( radians( latitude ) )
+                    * cos( radians( longitude ) - radians({$longitude})
+                    ) + sin( radians({$latitude}) ) *
+                    sin( radians( latitude ) ) )
+                ) AS distance"))
+            ->having('distance', '<', $radius)
+            ->orderBy('distance')
+            ->get();
+
+        return $restaurants;
+    }
+
 }
 
