@@ -30,7 +30,7 @@ class RestaurantController extends Controller
 
 
         foreach($recommendedNames as $restaurantName){
-            $restaurant = Restaurant::where('restaurants.name', '=', $restaurantName)->get();
+            $restaurant = Restaurant::where('restaurants.name', '=', $restaurantName)->first();
             array_push($recomendRestaurants, $restaurant);
         }
 
