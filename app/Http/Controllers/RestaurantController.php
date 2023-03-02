@@ -13,6 +13,50 @@ use Illuminate\Support\Facades\Validator;
 
 class RestaurantController extends Controller
 {
+    public function getAllRestaurants(){
+        $allRestaurants = Restaurant::all();
+        try{
+            return ResponseGenerator::generateResponse(200, $allRestaurants, 'Estos son todos los restaurantes.');
+        }catch(\Exception $e){
+            return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal');
+        }
+    }
+    public function getRecommended(){
+        $recommendedNames = ["O’hara’s Irish Pub & Restaurant", "Burmet", "Toro Burger Lounge", "Frankie Burgers",
+                        "El Rancho de Santa África", "La Bristoteca", "Freaks Burger", "Mad Grill", "Juancho’s BBQ",
+                        "New York Burger", "Goiko", "SteakBurger", "Williamsburg Grill & Beer", "Nugu Burger"];
+
+        $recomendRestaurants = [];
+
+
+        foreach($recommendedNames as $restaurantName){
+            $restaurant = Restaurant::where('restaurants.name', '=', $restaurantName)->get();
+            array_push($recomendRestaurants, $restaurant);
+        }
+
+        try{
+            return ResponseGenerator::generateResponse(200, $recomendRestaurants, 'Estos son todos los recomendados.');
+        }catch(\Exception $e){
+            return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal');
+        }
+    }
+    public function getRecentlyAdded(){
+        $recentlyAddedNames = ["#PORNEAT", "VICIO", "Pink’s", "Basics by Goiko"];
+
+        $recentlyAdded = [];
+
+
+        foreach($recentlyAddedNames as $restaurantName){
+            $restaurant = Restaurant::where('restaurants.name', '=', $restaurantName)->get();
+            array_push($recentlyAdded, $restaurant);
+        }
+
+        try{
+            return ResponseGenerator::generateResponse(200, $recentlyAdded, 'Estos son todos los recomendados.');
+        }catch(\Exception $e){
+            return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal');
+        }
+    }
     public function show($id){
         if($id){
             $restaurant = Restaurant::with('dishes')->find($id);
@@ -25,7 +69,7 @@ class RestaurantController extends Controller
             return ResponseGenerator::generateResponse(400, '', 'No id');
         }
     }
-    public function list(Request $request){
+    public function filterRestaurants(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
 
@@ -62,8 +106,6 @@ class RestaurantController extends Controller
         if($validator->fails()){
             return ResponseGenerator::generateResponse(400, $validator->errors()->all(), 'Fallo/s');
         }else{
-            $recomendRestaurants = Restaurant::limit(15)->orderBy('rate','desc')->get();
-
             $restaurants = Restaurant::where('restaurants.id','>',1);
 
             if($datos){
@@ -88,11 +130,8 @@ class RestaurantController extends Controller
                     return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal.');
                 }
             }else{
-                try{
-                    return ResponseGenerator::generateResponse(200, $recomendRestaurants, 'Estos son los recomendados.');
-                }catch(\Exception $e){
-                    return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal');
-                }
+                return ResponseGenerator::generateResponse(400,'', 'No hay filtros.');
+
             }
         }
     }
@@ -131,6 +170,5 @@ class RestaurantController extends Controller
 
         return $restaurants;
     }
-
 }
 

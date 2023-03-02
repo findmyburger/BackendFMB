@@ -37,7 +37,10 @@ Route::prefix('users')->group(function(){
 });
 Route::prefix('restaurants')->group(function(){
 
-    Route::post('/list',[RestaurantController::class,'list'])->middleware(['auth:sanctum']);
+    Route::post('/filterRestaurants',[RestaurantController::class,'filterRestaurants'])->middleware(['auth:sanctum']);
+    Route::get('/getAllRestaurants',[RestaurantController::class,'getAllRestaurants'])->middleware(['auth:sanctum']);
+    Route::get('/getRecommended',[RestaurantController::class,'getRecommended'])->middleware(['auth:sanctum']);
+    Route::get('/getRecentlyAdded',[RestaurantController::class,'getRecentlyAdded'])->middleware(['auth:sanctum']);
     Route::get('/show/{id}',[RestaurantController::class,'show'])->middleware(['auth:sanctum']);
     Route::put('/register',[RestaurantController::class,'register']);
 });
