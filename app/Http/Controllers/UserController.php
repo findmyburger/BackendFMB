@@ -241,7 +241,7 @@ class UserController extends Controller
         }else{
             $code = mt_rand();
             try{
-                Mail::to($datos->email)->send(new RecoverPassword($datos->email, $code));
+                Mail::to($datos->email)->queue(new RecoverPassword($datos->email, $code));
                 $data = array (
                     'code' => $code,
                     'email' => $datos->email
