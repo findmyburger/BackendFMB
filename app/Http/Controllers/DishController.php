@@ -12,7 +12,7 @@ class DishController extends Controller
 {
     public function show($id){
         if($id){
-            $dish = Dish::with('ingredients')->find($id);
+            $dish = Dish::find($id);
             if($dish){
                 return ResponseGenerator::generateResponse(200, $dish, 'Este es el plato encontrado');
             }else{
