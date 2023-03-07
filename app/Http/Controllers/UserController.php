@@ -7,13 +7,14 @@ use Illuminate\Http\Request;
 use App\Http\Helpers\ResponseGenerator;
 use App\Mail\RecoverPassword;
 use App\Models\Restaurant;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-
+use Illuminate\Support\Facades\Storage;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -316,7 +317,18 @@ class UserController extends Controller
                 }
             }
             if(isset($datos->image)){
-                $user->image = $datos->image;
+                $imageData = $datos->image;
+
+                $temporal_file = tempnam(sys_get_temp_dir(), 'img');
+                file_put_contents($temporal_file, base64_decode($imageData));
+
+                $file = new UploadedFile($temporal_file, base64_decode($imageData));
+                $url = Storage::url(Auth::user()->name.'.jpg');
+                $finalUrl = 'http://127.0.0.1:8000'.$url;
+
+                $file->storeAs('public', Auth::user()->name.'jpg');
+                $user->image = $finalUrl;
+
             }
             try{
                 $user->save();
