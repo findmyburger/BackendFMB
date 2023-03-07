@@ -269,7 +269,7 @@ class UserController extends Controller
             'password' => 'max:40',
             'newPassword' => Password::min(8)->letters()->numbers()->mixedCase(),
             'newPassword_confirmation' => 'same:newPassword',
-            'image' => ['max:255', 'image'],
+            'image' => ['max:255'],
         ],
         [
             'name' => [
@@ -283,7 +283,6 @@ class UserController extends Controller
             ],
             'image' => [
                 'max' => 'La referencia es muy larga.',
-                'image' => 'El formato de la imagen es inválido',
             ],
         ]);
 
