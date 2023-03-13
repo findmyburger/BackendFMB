@@ -50,4 +50,24 @@ class DishController extends Controller
             }
         }
     }
+    public function regist(Request $request){
+        $json = $request->getContent();
+        $datos = json_decode($json);
+
+
+        foreach($datos as $item){
+
+            $dish = new Dish();
+
+            $dish->name = $item->name;
+            $dish->image = $item->image;
+            $dish->price = $item->price;
+            $dish->ingredients = $item->ingredients;
+            $dish->burgerType = $item->burgerType;
+
+            $dish->save();
+
+        }
+        return ResponseGenerator::generateResponse(200, '', 'ok');
+    }
 }

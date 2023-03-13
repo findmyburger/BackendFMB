@@ -44,4 +44,5 @@ Route::prefix('restaurants')->group(function(){
 Route::prefix('dishes')->group(function(){
     Route::post('/restaurantFilter',[DishController::class,'restaurantFilter'])->middleware(['auth:sanctum']);
     Route::get('/show/{id}',[DishController::class,'show'])->middleware(['auth:sanctum']);
+    Route::put('/regist',[DishController::class,'regist']);
 });
