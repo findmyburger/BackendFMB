@@ -21,8 +21,8 @@ use function PHPUnit\Framework\isEmpty;
 /**
  * @OA\Info(
  *      version="1.0.0",
- *      title="Usuarios",
- *      description="Todas las funciones relacionadas con los usuarios.",
+ *      title="Find My Burger",
+ *      description="Todas las funciones relacionadas con nuestra app.",
  * )
  */
 
@@ -323,7 +323,7 @@ class UserController extends Controller
 
                 $file = new UploadedFile($temporal_file, base64_decode($imageData));
                 $url = Storage::url(Auth::user()->name.'.jpg');
-                $finalUrl = 'http://127.0.0.1:8000'.$url;
+                $finalUrl = env('APP_URL').$url;
 
                 $file->storeAs('public', Auth::user()->name.'jpg');
                 $user->image = $finalUrl;

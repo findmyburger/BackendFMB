@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Usuarios",
-        "description": "Todas las funciones relacionadas con los usuarios.",
+        "title": "Find My Burger",
+        "description": "Todas las funciones relacionadas con nuestra app.",
         "version": "1.0.0"
     },
     "paths": {
