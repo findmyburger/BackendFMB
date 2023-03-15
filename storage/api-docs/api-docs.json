@@ -1,0 +1,327 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Find My Burger",
+        "description": "Todas las funciones relacionadas con nuestra app.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/users/register": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Registrar un usuario",
+                "description": "Función para registrar usuarios en la app.",
+                "operationId": "registerUser",
+                "requestBody": {
+                    "description": "Registrar un usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": {
+                                "Registro": {
+                                    "summary": "Este es un ejemplo de registro",
+                                    "value": {
+                                        "name": "Paco",
+                                        "email": "paco@gmail.com",
+                                        "password": "Aa123456",
+                                        "password_confirm": "Aa123456"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registro correcto"
+                    },
+                    "400": {
+                        "description": "Datos erróneos"
+                    }
+                }
+            }
+        },
+        "/api/users/addRestaurantToFavourite": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Añadir un restaurante a favoritos",
+                "description": "Función para añadir un restaurante a favoritos.",
+                "operationId": "addFavouriteUser",
+                "requestBody": {
+                    "description": "Añadir un restaurante a favoritos",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": {
+                                "Añadir un restaurante a favoritos": {
+                                    "summary": "Este es un ejemplo de añadir un restaurante a favoritos",
+                                    "value": {
+                                        "restaurant_id": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Añadido correctamente"
+                    },
+                    "400": {
+                        "description": "Restaurante erróneo"
+                    }
+                }
+            }
+        },
+        "/api/users/deleteRestaurantInFavourite": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Borrar un restaurante a favoritos",
+                "description": "Función para borrar un restaurante a favoritos.",
+                "operationId": "deleteRestaurantInFavourite",
+                "requestBody": {
+                    "description": "Borrar un restaurante a favoritos",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": {
+                                "Borrar un restaurante a favoritos": {
+                                    "summary": "Este es un ejemplo de borrar un restaurante a favoritos",
+                                    "value": {
+                                        "restaurant_id": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Añadido correctamente"
+                    },
+                    "400": {
+                        "description": "Restaurante erróneo"
+                    }
+                }
+            }
+        },
+        "/api/users/favouriteList": {
+            "get": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Recibir la lista de favoritos",
+                "description": "Función para recibir la lista de favoritos.",
+                "operationId": "favouriteList",
+                "requestBody": {
+                    "description": "Recibir la lista de favoritos",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Esta es la lista de favoritos: {Lista}"
+                    },
+                    "400": {
+                        "description": "Restaurante erróneo"
+                    }
+                }
+            }
+        },
+        "/api/users/updateData": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Cambiar los datos de un usuario",
+                "description": "Función para cambiar los datos de los usuarios en la app.",
+                "operationId": "updateUser",
+                "requestBody": {
+                    "description": "Actualizar un usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": {
+                                "Actualizar datos": {
+                                    "summary": "Este es un ejemplo de actualizar datos",
+                                    "value": {
+                                        "name": "Pedro"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login correcto"
+                    },
+                    "400": {
+                        "description": "Credenciales erroneas"
+                    }
+                }
+            }
+        },
+        "/api/users/login": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Hacer login de un usuario",
+                "description": "Función para loguear usuarios en la app.",
+                "operationId": "loginUser",
+                "requestBody": {
+                    "description": "Loguear un usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": {
+                                "Login": {
+                                    "summary": "Este es un ejemplo de login",
+                                    "value": {
+                                        "name": "Paco",
+                                        "password": "Aa123456"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login correcto"
+                    },
+                    "400": {
+                        "description": "Credenciales erroneas"
+                    }
+                }
+            }
+        },
+        "/api/users/signOut": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Cerrar sesión de un usuario",
+                "description": "Función para cerrar sesión de un usuario.",
+                "operationId": "signOut",
+                "requestBody": {
+                    "description": "Cerrar sesión de un usuario",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Se cerró sesión"
+                    },
+                    "400": {
+                        "description": "Algo salió mal"
+                    }
+                }
+            }
+        },
+        "/api/users/sendEmail": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Mandar email a un usuario",
+                "description": "Función para mandar email a un usuario.",
+                "operationId": "sendEmail",
+                "requestBody": {
+                    "description": "Mandar email a un usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": {
+                                "Mandar email a un usuario": {
+                                    "summary": "Este es un ejemplo de mandar email a un usuario",
+                                    "value": {
+                                        "email": "paco@gmail.com"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email mandado correctamente"
+                    },
+                    "400": {
+                        "description": "Algo salió mal"
+                    }
+                }
+            }
+        },
+        "/api/users/recoverPass": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Recuperar la contraseña de un usuario",
+                "description": "Función para recuperar la contraseña de un usuario.",
+                "operationId": "recoverPass",
+                "requestBody": {
+                    "description": "Recuperar la contraseña de un usuario",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {},
+                            "examples": {
+                                "Recuperar la contraseña de un usuario": {
+                                    "summary": "Este es un ejemplo de recuperar la contraseña de un usuario",
+                                    "value": {
+                                        "password": "Aa123456",
+                                        "password_confirm": "Aa123456",
+                                        "email": "paco@gmail.com"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email mandado correctamente"
+                    },
+                    "400": {
+                        "description": "Algo salió mal"
+                    }
+                }
+            }
+        },
+        "/api/users/getData": {
+            "get": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Recibir los datos del usuario",
+                "description": "Función para recibir los datos del usuario.",
+                "operationId": "getData",
+                "requestBody": {
+                    "description": "Recibir los datos del usuario",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Estos son los datos del usuario: {Datos}"
+                    },
+                    "400": {
+                        "description": "Algo salió mal"
+                    }
+                }
+            }
+        }
+    }
+}

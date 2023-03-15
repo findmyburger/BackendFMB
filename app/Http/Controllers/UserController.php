@@ -7,18 +7,54 @@ use Illuminate\Http\Request;
 use App\Http\Helpers\ResponseGenerator;
 use App\Mail\RecoverPassword;
 use App\Models\Restaurant;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-
+use Illuminate\Support\Facades\Storage;
 
 use function PHPUnit\Framework\isEmpty;
 
+/**
+ * @OA\Info(
+ *      version="1.0.0",
+ *      title="Find My Burger",
+ *      description="Todas las funciones relacionadas con nuestra app.",
+ * )
+ */
+
 class UserController extends Controller
 {
+    /**
+     * @OA\Post(path="/api/users/register",
+     *     tags={"user"},
+     *     summary="Registrar un usuario",
+     *     description="Función para registrar usuarios en la app.",
+     *     operationId="registerUser",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Registrar un usuario",
+     *         @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="Registro",
+     *                  summary="Este es un ejemplo de registro",
+     *                  value = {
+     *                      "name": "Paco",
+     *                      "email": "paco@gmail.com",
+     *                      "password": "Aa123456",
+     *                      "password_confirm": "Aa123456",
+     *                  }
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(response=200, description="Registro correcto"),
+     *     @OA\Response(response=400, description="Datos erróneos")
+     * )
+     */
+
     public function register(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -76,6 +112,29 @@ class UserController extends Controller
             }
         }
     }
+    /**
+     * @OA\Post(path="/api/users/addRestaurantToFavourite",
+     *     tags={"user"},
+     *     summary="Añadir un restaurante a favoritos",
+     *     description="Función para añadir un restaurante a favoritos.",
+     *     operationId="addFavouriteUser",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Añadir un restaurante a favoritos",
+     *         @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="Añadir un restaurante a favoritos",
+     *                  summary="Este es un ejemplo de añadir un restaurante a favoritos",
+     *                  value = {
+     *                      "restaurant_id": 1,
+     *                  }
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(response=200, description="Añadido correctamente"),
+     *     @OA\Response(response=400, description="Restaurante erróneo")
+     * )
+     */
     public function addRestaurantToFavourite(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -109,6 +168,29 @@ class UserController extends Controller
             }
         }
     }
+    /**
+     * @OA\Post(path="/api/users/deleteRestaurantInFavourite",
+     *     tags={"user"},
+     *     summary="Borrar un restaurante a favoritos",
+     *     description="Función para borrar un restaurante a favoritos.",
+     *     operationId="deleteRestaurantInFavourite",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Borrar un restaurante a favoritos",
+     *         @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="Borrar un restaurante a favoritos",
+     *                  summary="Este es un ejemplo de borrar un restaurante a favoritos",
+     *                  value = {
+     *                      "restaurant_id": 1,
+     *                  }
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(response=200, description="Añadido correctamente"),
+     *     @OA\Response(response=400, description="Restaurante erróneo")
+     * )
+     */
     public function deleteRestaurantInFavourite(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -135,11 +217,48 @@ class UserController extends Controller
             }
         }
     }
+    /**
+     * @OA\Get(path="/api/users/favouriteList",
+     *     tags={"user"},
+     *     summary="Recibir la lista de favoritos",
+     *     description="Función para recibir la lista de favoritos.",
+     *     operationId="favouriteList",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Recibir la lista de favoritos",
+     *     ),
+     *     @OA\Response(response=200, description="Esta es la lista de favoritos: {Lista}"),
+     *     @OA\Response(response=400, description="Restaurante erróneo")
+     * )
+     */
     public function favouriteList(){
         $user = User::with('restaurants')->find(Auth::user()->id);
 
         return ResponseGenerator::generateResponse(200, $user->restaurants, 'Estos son los restaurantes favoritos.');
     }
+    /**
+     * @OA\Post(path="/api/users/updateData",
+     *     tags={"user"},
+     *     summary="Cambiar los datos de un usuario",
+     *     description="Función para cambiar los datos de los usuarios en la app.",
+     *     operationId="updateUser",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Actualizar un usuario",
+     *         @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="Actualizar datos",
+     *                  summary="Este es un ejemplo de actualizar datos",
+     *                  value = {
+     *                      "name": "Pedro",
+     *                  }
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(response=200, description="Login correcto"),
+     *     @OA\Response(response=400, description="Credenciales erroneas")
+     * )
+     */
     public function updateData(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -150,7 +269,7 @@ class UserController extends Controller
             'password' => 'max:40',
             'newPassword' => Password::min(8)->letters()->numbers()->mixedCase(),
             'newPassword_confirmation' => 'same:newPassword',
-            'image' => ['max:255', 'image'],
+            'image' => ['max:255'],
         ],
         [
             'name' => [
@@ -164,7 +283,6 @@ class UserController extends Controller
             ],
             'image' => [
                 'max' => 'La referencia es muy larga.',
-                'image' => 'El formato de la imagen es inválido',
             ],
         ]);
 
@@ -198,7 +316,18 @@ class UserController extends Controller
                 }
             }
             if(isset($datos->image)){
-                $user->image = $datos->image;
+                $imageData = $datos->image;
+
+                $temporal_file = tempnam(sys_get_temp_dir(), 'img');
+                file_put_contents($temporal_file, base64_decode($imageData));
+
+                $file = new UploadedFile($temporal_file, base64_decode($imageData));
+                $url = Storage::url(Auth::user()->name.'.jpg');
+                $finalUrl = env('APP_URL').$url;
+
+                $file->storeAs('public', Auth::user()->name.'jpg');
+                $user->image = $finalUrl;
+
             }
             try{
                 $user->save();
@@ -210,6 +339,30 @@ class UserController extends Controller
 
 
     }
+    /**
+     * @OA\Post(path="/api/users/login",
+     *     tags={"user"},
+     *     summary="Hacer login de un usuario",
+     *     description="Función para loguear usuarios en la app.",
+     *     operationId="loginUser",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Loguear un usuario",
+     *         @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="Login",
+     *                  summary="Este es un ejemplo de login",
+     *                  value = {
+     *                      "name": "Paco",
+     *                      "password": "Aa123456",
+     *                  }
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(response=200, description="Login correcto"),
+     *     @OA\Response(response=400, description="Credenciales erroneas")
+     * )
+     */
     public function login(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -231,6 +384,20 @@ class UserController extends Controller
         }
 
     }
+    /**
+     * @OA\Post(path="/api/users/signOut",
+     *     tags={"user"},
+     *     summary="Cerrar sesión de un usuario",
+     *     description="Función para cerrar sesión de un usuario.",
+     *     operationId="signOut",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Cerrar sesión de un usuario",
+     *     ),
+     *     @OA\Response(response=200, description="Se cerró sesión"),
+     *     @OA\Response(response=400, description="Algo salió mal")
+     * )
+     */
     public function signOut(){
         $user = User::find(Auth::user()->id);
 
@@ -241,6 +408,29 @@ class UserController extends Controller
             return ResponseGenerator::generateResponse(200, $e, 'Algo salió mal');
         }
     }
+    /**
+     * @OA\Post(path="/api/users/sendEmail",
+     *     tags={"user"},
+     *     summary="Mandar email a un usuario",
+     *     description="Función para mandar email a un usuario.",
+     *     operationId="sendEmail",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Mandar email a un usuario",
+     *         @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="Mandar email a un usuario",
+     *                  summary="Este es un ejemplo de mandar email a un usuario",
+     *                  value = {
+     *                      "email": "paco@gmail.com",
+     *                  }
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(response=200, description="Email mandado correctamente"),
+     *     @OA\Response(response=400, description="Algo salió mal")
+     * )
+     */
     public function sendEmail(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -254,7 +444,7 @@ class UserController extends Controller
         }else{
             $code = mt_rand();
             try{
-                Mail::to($datos->email)->send(new RecoverPassword($datos->email, $code));
+                Mail::to($datos->email)->queue(new RecoverPassword($datos->email, $code));
                 $data = array (
                     'code' => $code,
                     'email' => $datos->email
@@ -265,6 +455,31 @@ class UserController extends Controller
             }
         }
     }
+    /**
+     * @OA\Post(path="/api/users/recoverPass",
+     *     tags={"user"},
+     *     summary="Recuperar la contraseña de un usuario",
+     *     description="Función para recuperar la contraseña de un usuario.",
+     *     operationId="recoverPass",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Recuperar la contraseña de un usuario",
+     *         @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="Recuperar la contraseña de un usuario",
+     *                  summary="Este es un ejemplo de recuperar la contraseña de un usuario",
+     *                  value = {
+     *                      "password": "Aa123456",
+     *                      "password_confirm": "Aa123456",
+     *                      "email": "paco@gmail.com",
+     *                  }
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(response=200, description="Email mandado correctamente"),
+     *     @OA\Response(response=400, description="Algo salió mal")
+     * )
+     */
     public function recoverPass(Request $request){
         $json = $request->getContent();
         $datos = json_decode($json);
@@ -309,6 +524,20 @@ class UserController extends Controller
         }
 
     }
+    /**
+     * @OA\Get(path="/api/users/getData",
+     *     tags={"user"},
+     *     summary="Recibir los datos del usuario",
+     *     description="Función para recibir los datos del usuario.",
+     *     operationId="getData",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Recibir los datos del usuario",
+     *     ),
+     *     @OA\Response(response=200, description="Estos son los datos del usuario: {Datos}"),
+     *     @OA\Response(response=400, description="Algo salió mal")
+     * )
+     */
     public function getData(){
         $userData = [
             "id" => Auth::user()->id,

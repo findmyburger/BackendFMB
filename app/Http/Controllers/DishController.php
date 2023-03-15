@@ -12,7 +12,7 @@ class DishController extends Controller
 {
     public function show($id){
         if($id){
-            $dish = Dish::with('ingredients')->find($id);
+            $dish = Dish::find($id);
             if($dish){
                 return ResponseGenerator::generateResponse(200, $dish, 'Este es el plato encontrado');
             }else{
@@ -49,5 +49,25 @@ class DishController extends Controller
                 return ResponseGenerator::generateResponse(400, $e, 'Algo ha salido mal.');
             }
         }
+    }
+    public function regist(Request $request){
+        $json = $request->getContent();
+        $datos = json_decode($json);
+
+
+        foreach($datos as $item){
+
+            $dish = new Dish();
+
+            $dish->name = $item->name;
+            $dish->image = $item->image;
+            $dish->price = $item->price;
+            $dish->ingredients = $item->ingredients;
+            $dish->burgerType = $item->burgerType;
+
+            $dish->save();
+
+        }
+        return ResponseGenerator::generateResponse(200, '', 'ok');
     }
 }
